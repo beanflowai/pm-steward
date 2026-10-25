@@ -81,11 +81,22 @@ This is not a script collection. It is a set of stages, each needing specific to
 
 ## Status
 
-Documentation only. There is no runnable code in this repo yet.
+Early. The rules, workflows, and templates are in place; the adapters and the minimum working path are not. There is no runnable code in this repo yet.
 
-The workflow was extracted from a running private instance and is being generalized as it is ported. Rules and adapters come first; scripts and a minimum working path follow. Next: `STACK.md`, `COMPOSITION.md`, and the first adapter, which is the host contract (`adapters/muse.md`).
+Read next: `GLOSSARY.md`, `pm-role.md`, `core/AGENTS.md`, `workflows/`, `templates/`.
+
+Next: `STACK.md` and `COMPOSITION.md` — the capability map and the stage-by-tool map — then one adapter per tool, starting with the host contract (`adapters/muse.md`).
 
 Muse is the reference host, not a dependency. Any runtime exposing the same five interfaces — persistent conversation, wake, hook-log, cron, remote shell — can replace it.
+
+## Layout
+
+- `core/AGENTS.md` — the standing rules, R01 to R34
+- `pm-role.md`, `GLOSSARY.md` — the role and the vocabulary
+- `workflows/` — one file per task shape, plus a template for new ones
+- `templates/` — the brief and the report formats
+- `adapters/` — one file per tool (planned)
+- `docs/plans/` — how this package is assembled
 
 ## License
 

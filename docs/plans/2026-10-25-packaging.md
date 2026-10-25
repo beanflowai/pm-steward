@@ -81,7 +81,7 @@ First adapters: `muse`, `cloudflare-tunnel`, `google-sheets`, `cliproxyapi`, `cc
 | Milestone | Content | Done when |
 |---|---|---|
 | M1 (this one) | LICENSE, README, this plan | first commit pushed; secret scan clean, including git metadata |
-| M2 | `pm-role.md`, core rules, workflows, templates, `GLOSSARY.md` — **translated to English, not copied** | every core rule ID has a counterpart, no instance identifiers, all links resolve |
+| M2 | `pm-role.md`, core rules, workflows, templates, `GLOSSARY.md` — **translated to English, not copied** | stable rule IDs R01–R34 exist and map to the private rule inventory; no instance identifiers; all links resolve |
 | M3 | `STACK.md`, `COMPOSITION.md`, first adapter (`muse`) | an independent implementer can write a stub that answers all five host interfaces from the doc alone |
 | M4 | `MINIMUM.md`, `config/pm.env.example`, genericized scripts, smoke test | a blank environment dispatches and collects one task by following `MINIMUM.md` |
 | M5 | a real run example (redacted transcript or recording) | the transcript shows task → wake → review → acceptance without unexplained steps |
@@ -93,7 +93,7 @@ Each milestone is committed separately, after one independent review.
 ## 6. Acceptance
 
 - **Secret scan**: grep the working tree for real domains, hostnames, emails, sheet ids, keys; also check commit author/committer metadata; then run gitleaks.
-- **Rule parity**: compare the public core against the private instance by rule ID and file inventory. Text will differ because the public copy is translated; missing or extra rules are failures.
+- **Rule parity**: compare by rule ID and file inventory once the private instance adopts the public IDs on its first pull. Until then, check the ID range against the private rule inventory by title. Text will differ because the public copy is translated; missing or extra rules are failures.
 - **Link check**: every internal link resolves to an existing file.
 - **Replication test** (from M4): follow `MINIMUM.md` from zero in a blank environment and dispatch plus collect one task.
 - **Terminology**: the words in `GLOSSARY.md` mean the same thing in every document.
