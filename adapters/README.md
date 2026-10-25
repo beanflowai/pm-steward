@@ -2,7 +2,7 @@
 
 One file per tool. Each adapter answers: what the tool does in the loop, prerequisites (account, subscription, machine), configuration variables, wiring steps, a verification command, known failures, and what can replace it.
 
-Planned: `muse`, `ledger`, `cloudflare-tunnel`, `google-sheets`, `cliproxyapi`, `ccs`, `ntfy`, `devspace`. The hourly sweep runs on the host's cron and is documented with the completion adapter.
+Adapters: [muse](muse.md), [ledger](ledger.md), [ssh](ssh.md), [cloudflare-tunnel](cloudflare-tunnel.md), [ccs](ccs.md), [cliproxyapi](cliproxyapi.md), [ntfy](ntfy.md), [google-sheets](google-sheets.md), [devspace](devspace.md). The hourly sweep runs on the host's cron and is documented with the completion adapter.
 
 ## The host contract
 
