@@ -5,7 +5,7 @@ Ten capabilities make the loop work. Host, ledger, dispatch, a runner with a mod
 | # | Capability | What it must provide | Reference | Substitutes | Adapter |
 |---|---|---|---|---|---|
 | 1 | Bot host | Persistent conversation, wake, hook log/silent, cron, remote shell | Muse | any bot runtime with hooks and scheduled jobs | `adapters/muse.md` |
-| 2 | Ledger | Durable task state, re-injected at every session start, per-gate timeline | the host's task board (Goals) | Linear, Notion, SQLite, a JSON file plus a read-first rule | `adapters/ledger.md` |
+| 2 | Ledger | One durable record per task, with a per-gate timeline; the bot reads it before acting | the host's task board (Goals) | Linear, Notion, SQLite, a JSON file | `adapters/ledger.md` |
 | 3 | Dispatch | Detached remote launch, log file, PID, registry entry | SSH + `nohup` | Tailscale + SSH, container exec, a cloud job API | `adapters/ssh.md` |
 | 4 | Reachability | Reach the worker when it has no public address | Cloudflare Tunnel + Access | Tailscale, WireGuard, a jump host | `adapters/cloudflare-tunnel.md` |
 | 5 | Runner | A CLI agent that can edit files, run tests, and stop | Claude Code through ccs profiles | codex CLI, aider, plain `claude` | `adapters/ccs.md` |
@@ -14,6 +14,8 @@ Ten capabilities make the loop work. Host, ledger, dispatch, a runner with a mod
 | 8 | Routing table | Read model roles at dispatch time | Google Sheets, read-only API | YAML in the instance repo, a database | `adapters/google-sheets.md` |
 | 9 | Second reviewer | Independent static review with structured findings | ChatGPT web through DevSpace | an API reviewer, another vendor, a human | `adapters/devspace.md` |
 | 10 | Issue tracker | Durable backlog outside the working tree | GitHub issues | any tracker | — |
+
+Injection is a host feature. Goals is injected because the host puts it in context at session start; Linear, Notion, or a file are not. With those substitutes, the bot must be told to read the ledger before acting, and the workflow must treat a session that skipped the read as a defect.
 
 ## The minimum
 

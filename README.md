@@ -54,13 +54,16 @@ Hard boundaries:
 
 In order of importance:
 
-| Capability | Reference implementation | Acceptable substitute |
-|---|---|---|
-| Bot host: persistent conversation, background wake, scheduled jobs | Muse | any bot runtime with hooks and cron |
-| Durable ledger, re-injected into context at every session start | the host's task board (Goals in the reference host) | Linear, Notion, SQLite, plus a rule that the bot reads them first |
-| Remote dispatch to a worker machine | SSH + `nohup` + log files | Tailscale + SSH, container exec, cloud job API |
-| Completion signal that wakes the conversation | ntfy + per-task hook | webhook, queue, chat message |
-| Independent review by another model family | a reviewer run through a different provider | a human reviewer |
+| Capability | What it must guarantee | Reference | Substitute |
+|---|---|---|---|
+| Bot host | persistent conversation, background wake, scheduled jobs | Muse | any bot runtime with hooks and cron |
+| Ledger storage | one durable record per task, written before work starts | Goals | Linear, Notion, SQLite |
+| Ledger injection | the record is in context before the first reply of a session | Muse injects Goals automatically | a session-start rule in the bot's instructions: read the ledger first |
+| Remote dispatch | detached launch, log file, recorded host and log path | SSH + `nohup` | Tailscale + SSH, container exec, cloud job API |
+| Completion signal | a worker completion can wake the conversation | ntfy + per-task hook | webhook, queue, chat message |
+| Independent review | a second model family reviews the diff | a reviewer run through a different provider | a human reviewer |
+
+Injection is a property of the host, not of the tracker: Goals is injected because Muse puts it in context, not because Goals is special. With Linear or SQLite the bot must be told to read the ledger at the start of every session, and the sweep should flag a session that acted without doing so.
 
 Three stores, not one: the **ledger** holds what to do and how far each gate has progressed; the **event pool** holds `started` and `done` records; the **registry** holds where each task ran and its log path. The worker needs outbound access to the completion channel, not just inbound SSH.
 
@@ -83,7 +86,7 @@ This is not a script collection. It is a set of stages, each needing specific to
 
 Early, but runnable. The rules, workflows, templates, adapters, and reference scripts are in place. The loop has not been exercised against a real worker from a clean machine yet, so treat the scripts as a starting point, not a product.
 
-Read next: `GLOSSARY.md`, `pm-role.md`, `core/AGENTS.md`, `COMPOSITION.md`, `MINIMUM.md`.
+Read next: `GLOSSARY.md`, `pm-role.md`, `core/AGENTS.md`, `COMPOSITION.md`, `MINIMUM.md`. For one concrete combination, see the Muse build in `builds/muse.md`.
 
 Muse is the reference host, not a dependency. Any runtime exposing the same five interfaces — persistent conversation, wake, hook-log, cron, remote shell — can replace it.
 
@@ -94,6 +97,7 @@ Muse is the reference host, not a dependency. Any runtime exposing the same five
 - `workflows/` — one file per task shape, plus a template for new ones
 - `templates/` — the brief and the report formats
 - `adapters/` — one file per tool, starting with the host contract
+- `builds/` — one concrete tool combination per host
 - `bin/` — reference scripts: dispatch, worker wrapper, sweep, smoke test
 - `config/pm.env.example` — every variable the scripts read
 - `docs/plans/` — how this package is assembled

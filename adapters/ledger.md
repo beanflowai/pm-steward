@@ -9,6 +9,8 @@ The ledger is the durable record of what to do and how far each task has progres
 - **Structured**: one entry per task with a checklist, the current step, the next step, and a timeline of gate passes.
 - **Append-only for evidence**: gate entries are added, not edited. A correction is a new entry that references the old one.
 
+Injection belongs to the host, not to the tracker. A tracker does not put itself into the context; the host does, or the bot is instructed to read it. Keep those two properties separate when choosing a substitute, because they fail differently: storage failure loses history, injection failure loses presence.
+
 Minimum fields per entry:
 
 | Field | Content |

@@ -2,7 +2,7 @@
 
 Five capabilities, in order. Each step ends with a check; do not start the next step until it passes. Everything else in `STACK.md` is optional.
 
-The scripts in `bin/` implement this path. If your host differs, replace the adapter, not the workflow.
+The scripts in `bin/` implement this path. If your host differs, replace the adapter, not the workflow. For a fully specified Muse-based combination, see `builds/muse.md`.
 
 **What you can skip here:** the routing table, model diversity, the second reviewer, and a tunnel. Skip them and the loop still runs; the review gate is thinner. Add them once the loop is boring.
 

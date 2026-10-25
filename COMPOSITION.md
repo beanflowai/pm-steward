@@ -2,6 +2,8 @@
 
 The workflow is a sequence of stages. Each stage needs specific tools wired together; a missing wire shows up as a specific failure, not as a vague slowdown. This page is the index: every stage points at the rule, the adapter, and the check that proves the wiring works.
 
+One concrete instantiation of this matrix, with a bill of materials and a config checklist, is in `builds/muse.md`.
+
 | Stage | Input | Tools | What the tools must guarantee | Typical failure | Verification |
 |---|---|---|---|---|---|
 | Plan | A task from the human | bot, ledger, project rules | The ledger entry exists before work starts; the project rules were read (R10, R16) | Work starts from chat memory instead of the ledger | The entry lists the current and next step |

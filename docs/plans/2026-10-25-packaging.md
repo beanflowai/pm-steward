@@ -4,7 +4,7 @@
 - Status: draft, pending review
 - Target repo: https://github.com/beanflowai/pm-steward (public)
 - Source instance: private `pm-role-workflow` (stays private; its history is not published)
-- Progress (2026-10-25): M1 shipped to `main`; M2 and M3 shipped on `docs/m2-core-docs`; M4 reference scripts are in place but have not been exercised against a real worker yet; M5 waits for a real run transcript.
+- Progress (2026-10-25): M1 shipped to `main`; M2 and M3 shipped on `docs/m2-core-docs`; M4 reference scripts are in place but have not been exercised against a real worker yet; M5 is now a Muse reference build (`builds/muse.md`) rather than a recorded run.
 
 ## 1. Goals and non-goals
 
@@ -85,7 +85,7 @@ First adapters: `muse`, `cloudflare-tunnel`, `google-sheets`, `cliproxyapi`, `cc
 | M2 | `pm-role.md`, core rules, workflows, templates, `GLOSSARY.md` — **translated to English, not copied** | stable rule IDs R01–R34 exist and map to the private rule inventory; no instance identifiers; all links resolve |
 | M3 | `STACK.md`, `COMPOSITION.md`, first adapter (`muse`) | an independent implementer can write a stub that answers all five host interfaces from the doc alone |
 | M4 | `MINIMUM.md`, `config/pm.env.example`, genericized scripts, smoke test | a blank environment dispatches and collects one task by following `MINIMUM.md` |
-| M5 | a real run example (redacted transcript or recording) | the transcript shows task → wake → review → acceptance without unexplained steps |
+| M5 | a reference build for Muse: one concrete tool combination and its wiring (`builds/muse.md`) | every capability in STACK has a named tool and config variable, and one task's path through them is written end to end |
 
 Each milestone is committed separately, after one independent review.
 
@@ -113,5 +113,5 @@ Each milestone is committed separately, after one independent review.
 ## 8. Open questions
 
 1. LICENSE holder is `beanflowai` for now; change to a legal name or organization?
-2. Should a de-identified transcript of a real run be published? It is the highest-value artifact and also the most expensive to clean.
+2. Should `builds/` be versioned per host release, or kept as one current page per host?
 3. When should the private repo move to the `vendor/core/` or submodule layout? Recommendation: after M2, so the move and the rewrite do not happen at the same time.
