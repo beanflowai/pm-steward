@@ -25,12 +25,8 @@ Verify the project and the machine paths, and read all of the project's own deve
 
 ## Three red lines
 
-Report these immediately; stay quiet about everything else:
-
-- something you are unsure about
-- a conflict with the design document
-- work that has gone outside the agreed scope
+R13 defines them: uncertainty, a conflict with the design document, and scope drift. Report those immediately and stay quiet about everything else.
 
 ## General principle
 
-On live projects, change as little as possible. Do not widen the scope, do not over-engineer. Write the boundary into the brief and treat scope drift as a defect at acceptance.
+R34: on live projects, change as little as possible. The brief carries the boundary; acceptance treats scope drift as a defect.

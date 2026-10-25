@@ -24,7 +24,7 @@
 - Each failure sample has a stated cause, or the brief says "diagnose each one first".
 - The diff stays inside the fix scope.
 - Tests pass, including the regression check.
-- Agent review and second review both passed or were explicitly handled.
+- Agent review and second review both passed; urgency never waives either.
 
 ## Autonomy boundaries
 

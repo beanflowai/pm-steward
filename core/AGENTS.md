@@ -74,12 +74,12 @@ Proactively report: uncertainty, conflict with the design document, and work out
 
 ### R14 Split and parallelize; four questions before dispatch
 
-Split a task into independently deliverable units and run independent tracks in parallel — do not queue one behind another. Read-only pre-analysis of the next unit starts while the current one is in review.
+Split a feature into independently deliverable tasks and run independent tracks in parallel — do not queue one behind another. Read-only pre-analysis of the next task starts while the current one is in review.
 
 Before every dispatch, answer four questions in writing in the task record:
 
-1. Does this task contain more than one independently deliverable unit?
-2. If yes, what are the parallel sub-tasks? (one finding, one unit, one task)
+1. Does this work contain more than one independently deliverable task?
+2. If yes, what are the parallel tasks? (one finding, one task)
 3. If no, why can it not be split? ("must be serial" is a valid answer; "did not think about it" is not.)
 4. What files does each track touch, and how are overlaps handled?
 
@@ -94,6 +94,10 @@ Dispatch findings at finding granularity, one task per finding, unless two findi
 Every task gets one ledger entry when it starts and is closed only when finished. The entry's description is a checklist using three marks: done, in progress, pending; its current state always names the current step and the next step. Every gate pass appends a timeline entry with concrete evidence: review window or link, findings count and closure status, test results.
 
 The gate order is fixed: implement, agent review, local commit, second review, fix rounds (each fix round is reviewed by a fresh agent before its local commit), acceptance, final push, report.
+
+Second review is mandatory by default. It is optional only for a purely visual change that touches no logic, data, or calculation. Rule and design documents always need it; a pure-documentation commit may skip it only where the instance's policy says so.
+
+The checklist also carries one line for the end-of-task lesson sweep defined in `workflows/self-evolution.md`. That line records either a candidate or "nothing extractable".
 
 Before reporting "done", reconcile every checklist item. A missing item means you do not report completion. Push permission defaults to yes; exceptions are written into the entry. A task that says "do not push this time" overrides the default.
 
@@ -117,9 +121,9 @@ A resume — new runtime, compacted context, hours away — is not "continue the
 
 **Hard boundaries, none of which may be missed:**
 
-1. Never push `main`, `master`, or any protected or production branch. The target is always the task's own branch; verify the local and remote branch names before pushing.
-2. No force-push, no `--force-with-lease`, no deletion of remote branches or tags unless the human explicitly asks for that task.
-3. Never push secrets, credentials, personal data, large files, unaccepted intermediate commits, or unreviewed work. Do not push tags unless asked. Do not push to the wrong repository.
+1. Never push `main`, `master`, or any protected or production branch. The target is always the task's own branch; verify the local and remote branch names before pushing, and stop if they differ.
+2. Push is plain fast-forward only: no force-push, no `--force-with-lease`, no deletion of remote branches or tags unless the human explicitly asks for that task.
+3. Before pushing, read the diff. If it contains secrets, credentials, personal data, large files, unaccepted intermediate commits, or unreviewed work, stop. Do not push tags unless asked. Do not push to the wrong repository.
 4. On a non-fast-forward rejection, stop and report: task branch, local commit, remote state, and any visible cause. Do not auto-pull, merge, rebase, retry in a loop, or force.
 
 Merge, release, and anything sent externally always stay with the human. Pushing a task branch is not permission to merge it.
@@ -152,7 +156,9 @@ There is no wall-clock timeout. The run is bounded by turn limits. If a task loo
 
 ### R22 Completion event pool
 
-Every remote long task registers in the event pool. The durable ledger is `<task_id>.started.json` and `<task_id>.done.json`; the realtime signal goes through the completion adapter. On a done wake, read the done record and the log, then archive the handled event and write a receipt.
+Every remote long task registers in the event pool. The durable ledger is `<task_id>.started.json` and `<task_id>.done.json`; the realtime signal goes through the completion adapter. On a done wake: write the receipt, read the done record and the log, then archive the handled event.
+
+The wake is delivered to the conversation that started the task, not to a side panel. The hook disables itself after a done wake; after one stalled or failed-to-start notice it stays enabled and keeps waiting for the eventual done.
 
 The pool is the durable truth. The realtime signal is only a nudge; if the nudge is lost, the sweep finds the record.
 
@@ -172,7 +178,7 @@ Sent and received are separate ledgers and must not be mixed:
 
 ### R25 Task ids are never reused
 
-Every dispatch uses a new task id. If a `started` record is corrupt, delete it and rewrite; do not revive the id. Hooks filter by task id, so a reused id silently skips the second completion.
+Every dispatch uses a new task id. If a `started` record is corrupt, delete and rewrite that record for the same dispatch; never reuse an id that already completed. Hooks filter by task id, so a reused id silently skips the second completion.
 
 ### R26 One command per step in a brief
 
@@ -180,13 +186,13 @@ Commands in a brief perform one action each. Do not chain with `&&`, do not use 
 
 ### R27 Dispatch preflight
 
-Before launching, verify the dispatch configuration and the completion channel for this task: the configured wrapper template exists and is the intended one, and the per-task hook is built and verified. Any missing piece stops the dispatch. There is no silent fallback to an older template or an unchecked path.
+Before launching, verify the dispatch configuration and the completion channel for this task: the configured template exists and is the intended one, and the per-task hook is built and verified. A task estimated to run longer than the adapter's long-task threshold must use the long-task template; if it does not, stop and fix the configuration instead of dispatching. Any missing piece stops the dispatch. There is no silent fallback to an older template or an unchecked path.
 
 The hook must be created, dry-run silently, enabled, and listed before dispatch. The dispatch step itself does not create or validate the hook.
 
 ### R28 Model selection
 
-Choose by role and by task difficulty, not by habit, and re-read the routing table at dispatch time — never from cache. Do not hardcode model names in workflows or briefs.
+Choose by role and by task difficulty, not by habit, and re-read the routing table at dispatch time — never from cache. If the table cannot be fetched, stop and report; do not substitute a cached or older one. Do not hardcode model names in workflows or briefs.
 
 Selection order: match the role (architect, coding, reviewer, ui-reviewer); within the role, ascending priority; fall back to adaptable roles; skip anything not active. On a priority tie, a dedicated role beats a shared one.
 

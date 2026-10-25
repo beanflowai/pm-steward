@@ -10,7 +10,7 @@
 2. **Open the ledger entry** — R16. The checklist covers every gate; each pass gets a timeline entry with evidence.
 3. **Split and plan parallel tracks** — R14, including the four pre-dispatch questions in writing.
 4. **Dispatch** — R27 preflight, then R21 for detachment and monitoring. Brief from `templates/brief.md`. Model selection per R28 with the coding role; follow the project's own skills.
-5. **Agent review** — R06 and R07. A different agent, a different model family. Findings go back to step 4, with the reviewer summary pasted verbatim into the fix brief (R30).
+5. **Agent review** — R06 and R07. A different agent, a different model family. Findings go back to step 4, with the reviewer summary pasted verbatim into the fix brief (R07, and R30 for the fresh agent).
 6. **Local commit** — only after the agent review passes. The worker does not commit; the commit happens at this gate.
 7. **Second review** — the static review gate defined by the instance's adapter. Findings are triaged per R31 and convergence per R32.
 8. **Acceptance** — read the diff yourself and rerun the checks independently. Scope drift is a defect (R13).

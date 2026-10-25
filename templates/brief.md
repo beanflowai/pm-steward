@@ -41,7 +41,7 @@ The PM pastes the previous reviewer structured summary here verbatim, without re
 
 - Use a fresh agent: include all context here; do not rely on `--continue` / `--resume`.
 - Do not expand scope; report anything outside it instead of fixing it.
-- Never merge. Push only if the task authorizes it.
+- Never merge. Do not commit or push unless this brief explicitly authorizes it; when in doubt, report and stop.
 - If blocked, stop and report the exact blocker.
 - Write commands step by step, one action per command; do not chain steps with `&&`, do not use subshells, do not combine an action and its self-check into one command (R26).
 

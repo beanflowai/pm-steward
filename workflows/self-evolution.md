@@ -18,8 +18,11 @@
    - **Ledger of landed rules**: append one line per landing — date, task id, evidence pointer, file and commit, verification status (pending / verified / sent back). Git history remains the authority; the ledger is only an index.
 7. **Verify on the next similar task** — the next task of that type must cite the new rule, and the ledger timeline records which rules were cited. If the rule did not reduce rework, send it back to step 3; do not keep it out of inertia.
 8. **Curate periodically** — merge duplicates, archive expired rules (model withdrawn, tool retired), fix conflicts. Report contradictions as uncertainty (R33). Archive superseded skills; history stays in git.
-   - Curator triggers, any one of which starts a review: monthly; every N tasks (initial N = 3); or any rule unused across three consecutive tasks of its applicable type.
+   - Curator triggers, any one of which starts a review: monthly; every N tasks (initial N = 3); or any rule unused across three consecutive tasks **of the type it applies to**.
+   - Apply the scope filter before counting: a rule counts only against tasks inside its stated scope. A rule correctly unused outside its scope is not a signal.
    - Only tasks whose rule-citation list was recorded count in the denominator. Unrecorded citations do not count as "unused".
+   - Run the volume and duplication check from step 4 (roughly 200 lines, repeated sections).
+   - Archive and delete go through the approval queue like any other change; the PM never removes a file on its own.
    - Rules pinned by the human are exempt from archive and merge suggestions. The pin, its confirmation source, and a unique identifier for the rule are recorded in the landing ledger.
 
 ## Gates

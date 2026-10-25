@@ -1,6 +1,6 @@
 # pm-steward
 
-**A project manager that lives in a chatbot like Muse.** It automates project management for you: planning, dispatching coding agents, keeping the ledger, and reviewing the work before anything ships.
+**A project manager that lives in a chatbot such as Muse.** It automates project management for you: planning, dispatching coding agents, keeping the ledger, and reviewing the work before anything ships.
 
 No dashboard, no ticket board, and no CLI for daily work. The interface is a conversation with a bot that stays on duty between messages.
 
@@ -52,17 +52,17 @@ Hard boundaries:
 
 ## What you need
 
-Most necessary first:
+In order of importance:
 
 | Capability | Reference implementation | Acceptable substitute |
 |---|---|---|
 | Bot host: persistent conversation, background wake, scheduled jobs | Muse | any bot runtime with hooks and cron |
-| Durable ledger, re-injected into context at every session start | Goals | Linear, Notion, SQLite, plus a rule that the bot reads them first |
+| Durable ledger, re-injected into context at every session start | the host's task board (Goals in the reference host) | Linear, Notion, SQLite, plus a rule that the bot reads them first |
 | Remote dispatch to a worker machine | SSH + `nohup` + log files | Tailscale + SSH, container exec, cloud job API |
 | Completion signal that wakes the conversation | ntfy + per-task hook | webhook, queue, chat message |
 | Independent review by another model family | a reviewer run through a different provider | a human reviewer |
 
-Two stores, not one: the **ledger** holds what to do and how far each gate has progressed; the **event pool** holds `started` / `done` records plus the dispatch registry (host, log path). The worker needs outbound access to the completion channel, not just inbound SSH.
+Two stores, not one: the **ledger** holds what to do and how far each gate has progressed; the **event pool** holds `started` and `done` records; the **registry** holds where each task ran and its log path. The worker needs outbound access to the completion channel, not just inbound SSH.
 
 Everything else — model routing tables, browser-based static review, tunnels — is optional. The smallest working setup will be documented in `MINIMUM.md` (planned).
 

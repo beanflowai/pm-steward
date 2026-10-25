@@ -4,7 +4,7 @@ Every document in this repo uses these words with exactly these meanings.
 
 **PM (steward)** — the bot that runs the project. It plans, dispatches, keeps the ledger, and accepts or rejects work. It does not merge, release, or decide product direction.
 
-**Task** — one independently deliverable unit of work. It has exactly one immutable **task id**, written in lowercase kebab-case.
+**Task** — one independently deliverable unit of work, dispatched once, with exactly one immutable **task id** in lowercase kebab-case. A feature is split into tasks; each task has its own ledger entry.
 
 **Brief** — the file handed to a worker. It carries context, scope, constraints, acceptance criteria, and the report format. A worker sees only the brief and the repository; it never reads the PM's private notes.
 
@@ -23,6 +23,8 @@ Every document in this repo uses these words with exactly these meanings.
 **Registry** — the dispatch record: task id, host, working directory, log path, start time. It is the authority for where a task ran and where its log lives.
 
 **Event pool** — the durable `started` and `done` records written by the dispatch and worker sides.
+
+**Sweep** — the periodic backstop that compares the event pool, the registry, and the received receipts, so a lost wake is still found. It supplements the hooks; it does not replace them.
 
 **Hook** — a host-side subscription that watches the event pool and pushes a message into the chat when a task finishes, stalls, or fails to start. Hooks are per task and remove themselves when they are done.
 
