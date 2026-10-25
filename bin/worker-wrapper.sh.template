@@ -145,5 +145,6 @@ fi
 log "wrapper end task=$TASK_ID exit=$CODE status=$STATUS"
 write_record done "$STATUS" "$CODE"
 notify "done $TASK_ID $STATUS"
+[ -n "$NOTIFY_NETRC" ] && rm -f "$NOTIFY_NETRC"
 
 exit 0

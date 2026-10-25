@@ -7,6 +7,7 @@ import re
 import sys
 
 PLACEHOLDER = re.compile(r"\{\{([A-Z][A-Z0-9_]*)\}\}")
+LEFTOVER = re.compile(r"\{\{.*?\}\}")
 
 
 def main() -> int:
@@ -38,7 +39,7 @@ def main() -> int:
     for name in names:
         text = text.replace("{{" + name + "}}", os.environ.get(name, ""))
 
-    leftover = sorted(set(PLACEHOLDER.findall(text)))
+    leftover = sorted(set(LEFTOVER.findall(text)))
     if leftover:
         print("ERROR: unresolved placeholders: " + ", ".join(leftover), file=sys.stderr)
         return 2

@@ -1,6 +1,6 @@
 # Stack
 
-Ten capabilities make the loop work. The first five are required; the rest are quality and convenience. Every capability has a reference implementation and at least one substitute — nothing here is a hard dependency except the shape of the contract.
+Ten capabilities make the loop work. Host, ledger, dispatch, a runner with a model endpoint, and a completion channel are required. Reachability is required only when the worker has no direct route; the rest are quality and convenience. Every capability has a reference implementation and at least one substitute — nothing here is a hard dependency except the shape of the contract.
 
 | # | Capability | What it must provide | Reference | Substitutes | Adapter |
 |---|---|---|---|---|---|

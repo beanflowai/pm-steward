@@ -73,7 +73,8 @@ pm_safe_path "$PM_WORKER_LOG_DIR" || die "PM_WORKER_LOG_DIR is not a safe absolu
 pm_safe_path "$PM_WORKER_WRAPPER_DIR" || die "PM_WORKER_WRAPPER_DIR is not a safe absolute path"
 [ -f "$BRIEF" ] || die "brief not found: $BRIEF"
 case "$PM_RUNNER_CMD" in
-  *$'\n'*|*';'*|*'|'*|*'&'*) die "PM_RUNNER_CMD must be one simple command without shell operators" ;;
+  ''|*$'\n'*|*';'*|*'|'*|*'&'*|*'$'*|*'`'*|*'>'*|*'<'*|*'*'*|*'?'*|*'['*|*']'*|*'('*|*')'*|*'{'*|*'}'*|*'"'*|*"'"*|*'\'*)
+    die "PM_RUNNER_CMD must be a simple command: no shell metacharacters" ;;
 esac
 
 TEMPLATE="${PM_TEMPLATE_PATH:-$SCRIPT_DIR/worker-wrapper.sh.template}"
@@ -85,6 +86,14 @@ REMOTE_BRIEF="${PM_WORKER_WRAPPER_DIR%/}/${TASK_ID}.brief.md"
 REGISTRY_FILE="${PM_REGISTRY_DIR%/}/${TASK_ID}.json"
 TASK_DIR="${PM_TASK_DIR%/}/${TASK_ID}"
 STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+[ -e "$REGISTRY_FILE" ] && die "task id already used: $TASK_ID (R25); choose a new id"
+
+REMOTE_NETRC=""
+if [ "${PM_CHECK:-0}" != "1" ] && [ -n "${PM_NOTIFY_NETRC:-}" ]; then
+  [ -f "$PM_NOTIFY_NETRC" ] || die "PM_NOTIFY_NETRC not found: $PM_NOTIFY_NETRC"
+  REMOTE_NETRC="${PM_WORKER_WRAPPER_DIR%/}/.${TASK_ID}.netrc"
+fi
 
 if [ "${PM_CHECK:-0}" = "1" ]; then
   cat <<EOF
@@ -104,13 +113,16 @@ dispatch plan (dry run)
   spool         : $PM_WORKER_SPOOL_DIR
   registry      : $REGISTRY_FILE
   hook command  : ${PM_HOOK_CREATE_CMD:-<none>}
+  credentials   : ${PM_NOTIFY_NETRC:-<none>}
 No files written, no connection made.
 EOF
   exit 0
 fi
 
 mkdir -p "$PM_REGISTRY_DIR" "$TASK_DIR"
-cp "$BRIEF" "$TASK_DIR/brief.md"
+if ! [ "$BRIEF" -ef "$TASK_DIR/brief.md" ]; then
+  cp "$BRIEF" "$TASK_DIR/brief.md"
+fi
 
 RENDERED=$(mktemp "${TMPDIR:-/tmp}/pm-wrapper.XXXXXX")
 cleanup() { rm -f "$RENDERED"; }
@@ -125,7 +137,7 @@ env \
   PATH_PREFIX="${PM_WORKER_PATH:-}" \
   NOTIFY_URL="${PM_NOTIFY_URL:-}" \
   NOTIFY_TOPIC="${PM_NOTIFY_TOPIC:-}" \
-  NOTIFY_NETRC="${PM_NOTIFY_NETRC:-}" \
+  NOTIFY_NETRC="$REMOTE_NETRC" \
   MONITOR_INTERVAL_SECS="${PM_MONITOR_INTERVAL_SECS:-600}" \
   MONITOR_TICK_SECS="${PM_MONITOR_TICK_SECS:-10}" \
   RUNNER_CMD="$PM_RUNNER_CMD" \
@@ -196,6 +208,11 @@ ssh_run() {
 
 ssh_run "umask 077; mkdir -p '$PM_WORKER_WRAPPER_DIR' '$PM_WORKER_LOG_DIR' '$PM_WORKER_SPOOL_DIR'" \
   || die "cannot prepare worker directories"
+
+if [ -n "$REMOTE_NETRC" ]; then
+  ssh_run "umask 077; cat > '$REMOTE_NETRC'" <"$PM_NOTIFY_NETRC" \
+    || die "cannot ship the completion credentials"
+fi
 
 ssh_run "cat > '$REMOTE_WRAPPER'" <"$RENDERED" || die "cannot ship the wrapper"
 ssh_run "cat > '$REMOTE_BRIEF'" <"$BRIEF" || die "cannot ship the brief"

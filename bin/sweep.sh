@@ -18,7 +18,7 @@ pm_require PM_REGISTRY_DIR PM_WORKER_SSH_TARGET PM_WORKER_SPOOL_DIR || exit 2
 pm_safe_path "$PM_WORKER_SPOOL_DIR" || { echo "ERROR: unsafe PM_WORKER_SPOOL_DIR" >&2; exit 2; }
 
 export PM_REGISTRY_DIR PM_WORKER_SSH_TARGET PM_WORKER_SPOOL_DIR
-export PM_SWEEP_RECEIVED="${PM_STATE_DIR:-$HOME/.local/state/pm}/handoff-received.jsonl"
+export PM_SWEEP_RECEIVED="${PM_RECEIPTS:-${PM_STATE_DIR:-$HOME/.local/state/pm}/handoff-received.jsonl}"
 export PM_SWEEP_STALE_SECS="${PM_SWEEP_STALE_SECS:-2100}"
 export PM_SWEEP_START_GRACE_SECS="${PM_SWEEP_START_GRACE_SECS:-300}"
 export PM_SWEEP_LOST_AFTER_SECS="${PM_SWEEP_LOST_AFTER_SECS:-3600}"
@@ -28,6 +28,8 @@ import datetime
 import glob
 import json
 import os
+import re
+import shlex
 import subprocess
 import sys
 import time
@@ -75,15 +77,11 @@ def load_received():
 def fetch_records(task):
     remote = (
         f"cat '{spool}/{task}.started.json' 2>/dev/null; printf '\\n'; "
-        f"cat '{spool}/{task}.done.json' 2>/dev/null"
+        f"cat '{spool}/{task}.done.json' 2>/dev/null; true"
     )
-    cmd = [
-        "ssh",
-        "-o", "BatchMode=yes",
-        "-o", "ConnectTimeout=10",
-        host,
-        remote,
-    ]
+    cmd = ["ssh"]
+    cmd.extend(shlex.split(os.environ.get("PM_SSH_OPTS", "")))
+    cmd.extend(["-o", "BatchMode=yes", "-o", "ConnectTimeout=10", host, remote])
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     except (subprocess.TimeoutExpired, OSError):
@@ -128,6 +126,10 @@ for path in entries:
         continue
 
     task = reg.get("task_id") or os.path.basename(path)[:-5]
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", task):
+        print(f"{'BAD_ID':<16} {task[:28]:<28} registry id is not a safe task id")
+        findings.append("bad-id")
+        continue
     started, done, reachable = fetch_records(task)
     task_age = age(reg.get("started_at"))
     started_age = age(started.get("at")) if started else None

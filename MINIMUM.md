@@ -29,10 +29,11 @@ Check: write one ledger entry by hand, restart the session, and ask the bot for 
 ```bash
 cp config/pm.env.example config/pm.env
 $EDITOR config/pm.env        # fill in the worker, runner, paths, completion channel
+source bin/pm-config.sh && pm_load_config .
 ./bin/smoke-test.sh
 ```
 
-The smoke test checks syntax, configuration, template rendering, dead links, and that no instance identifier leaked into the repository. It does not dispatch anything.
+Loading the config puts `PM_TASK_DIR` and the other paths in your shell for the commands below. The smoke test checks syntax, configuration, template rendering, dead links, and that no obvious secret is committed; it does not dispatch anything. Set `PM_SMOKE_DENY` to your own hostnames and usernames if you want it to catch those too.
 
 Check: the smoke test exits 0.
 
@@ -69,7 +70,7 @@ Check, in this order:
 
 ## 4. Completion channel
 
-Set up the push channel (`adapters/ntfy.md`), then create the per-task hook **before** the next dispatch — it must be built, dry-run silently, enabled, and listed. If your host adapter provides a hook-creation command, put it in `PM_HOOK_CREATE_CMD`; dispatch runs it before the launch and aborts if it fails.
+Set up the push channel (`adapters/ntfy.md`), then create the per-task hook **before** the next dispatch — it must be built, dry-run silently, enabled, and listed. If your host adapter provides a hook-creation command, put it in `PM_HOOK_CREATE_CMD`; dispatch runs it before the launch and aborts if it fails. Dispatch ships a per-task netrc to the worker and deletes it when the task ends.
 
 Check: rerun the no-op task. A `done` ping arrives, the hook wakes the conversation that started the task, and the PM writes a receipt.
 

@@ -62,7 +62,7 @@ In order of importance:
 | Completion signal that wakes the conversation | ntfy + per-task hook | webhook, queue, chat message |
 | Independent review by another model family | a reviewer run through a different provider | a human reviewer |
 
-Two stores, not one: the **ledger** holds what to do and how far each gate has progressed; the **event pool** holds `started` and `done` records; the **registry** holds where each task ran and its log path. The worker needs outbound access to the completion channel, not just inbound SSH.
+Three stores, not one: the **ledger** holds what to do and how far each gate has progressed; the **event pool** holds `started` and `done` records; the **registry** holds where each task ran and its log path. The worker needs outbound access to the completion channel, not just inbound SSH.
 
 Everything else — model routing tables, browser-based static review, tunnels — is optional. The smallest working setup is documented in `MINIMUM.md`.
 

@@ -146,7 +146,7 @@ Any task dispatched over SSH or an equivalent channel runs detached: `nohup`, a 
 
 Check the log about two minutes after dispatch: is it growing, has the worker started reading the brief and the target files, is there an immediate fatal error? If normal, leave it alone. If not, diagnose and report before deciding; never re-dispatch blindly.
 
-After that, monitor lightly. The wrapper compares log size and a worktree fingerprint (git status, diff size, mtime/size of changed and untracked files) on an interval. If both are unchanged, it sends one `check <task_id>` reminder — that is a "go look", not a diagnosis. When the log grows again or the worktree changes, it sends `progress <task_id>` so the reminder is cleared. One reminder per stall.
+After that, monitor lightly. The wrapper compares log size and a worktree fingerprint (git status, diff size, and the number of files changed since the wrapper started) on an interval. If both are unchanged, it sends one `check <task_id>` reminder — that is a "go look", not a diagnosis. When the log grows again or the worktree changes, it sends `progress <task_id>` so the reminder is cleared. One reminder per stall.
 
 A log that is not growing is not a hang: a `--print` worker can run for a long time with no stdout. An unchanged worktree is not a hang either: thinking and reading change nothing. So the monitor reminds, never judges, and never kills.
 
@@ -173,7 +173,7 @@ The dispatch registry's `host` and `log` fields are the only authority for where
 Sent and received are separate ledgers and must not be mixed:
 
 - The **sent** ledger is written only by the hook and means "a wake was sent".
-- The **received** ledger is written only by the PM (when the wake arrives in the conversation) and by the sweep. It is the only basis for judging a lost message.
+- The **received** ledger is written only by the PM, when the wake arrives in the conversation. The sweep reads it and reports a missing receipt; it does not write one.
 - `kind` in a receipt is the wake type — done, possibly hung, failed to start, check reminder — not the task result. The result is in the payload's `status`; a failed task still has a done wake.
 
 ### R25 Task ids are never reused

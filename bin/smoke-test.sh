@@ -24,7 +24,8 @@ for file in "$SCRIPT_DIR"/*.sh "$SCRIPT_DIR"/*.sh.template; do
   [ -f "$file" ] || continue
   if bash -n "$file" 2>/dev/null; then ok "bash $file"; else bad "bash $file"; fi
 done
-if python3 -B -m py_compile "$SCRIPT_DIR/render.py" 2>/dev/null; then
+if python3 -c 'import ast, sys; ast.parse(open(sys.argv[1], encoding="utf-8").read())' \
+  "$SCRIPT_DIR/render.py" 2>/dev/null; then
   ok "python render.py"
 else
   bad "python render.py"
@@ -45,6 +46,9 @@ if pm_require PM_WORKER_SSH_TARGET PM_WORKER_SPOOL_DIR PM_WORKER_LOG_DIR \
   ok "required variables"
 else
   bad "required variables"
+  echo
+  echo "fix the configuration and re-run"
+  exit 2
 fi
 
 echo "== rendering =="
@@ -97,8 +101,30 @@ else
   TRACKED=$(cd "$REPO_ROOT" && find . -type f -not -path './.git/*' | sed 's|^\./||')
 fi
 
+matches_re() {
+  local pattern="$1" file
+  while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    if grep -qE -- "$pattern" "$REPO_ROOT/$file" 2>/dev/null; then
+      return 0
+    fi
+  done <<<"$TRACKED"
+  return 1
+}
+
+matches_fixed() {
+  local pattern="$1" file
+  while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    if grep -qiF -- "$pattern" "$REPO_ROOT/$file" 2>/dev/null; then
+      return 0
+    fi
+  done <<<"$TRACKED"
+  return 1
+}
+
 for pattern in 'AIza[0-9A-Za-z_-]{20,}' 'BEGIN (RSA|OPENSSH|EC) PRIVATE KEY' 'sheet_id=[A-Za-z0-9_-]{20,}'; do
-  if printf '%s\n' "$TRACKED" | xargs grep -lE "$pattern" 2>/dev/null | grep -q .; then
+  if matches_re "$pattern"; then
     bad "secret-like value matches: $pattern"
     LEAK=1
   fi
@@ -109,7 +135,7 @@ if [ -n "${PM_SMOKE_DENY:-}" ]; then
   IFS=',' read -r -a DENY <<<"$PM_SMOKE_DENY"
   for term in ${DENY[@]+"${DENY[@]}"}; do
     [ -n "$term" ] || continue
-    if printf '%s\n' "$TRACKED" | xargs grep -li -- "$term" 2>/dev/null | grep -q .; then
+    if matches_fixed "$term"; then
       bad "denied identifier present: $term"
       LEAK=1
     fi
@@ -179,9 +205,17 @@ if [ "$LIVE" -eq 1 ]; then
   else
     bad "worker unreachable or runner missing"
   fi
-  if [ -n "${PM_NOTIFY_URL:-}" ]; then
-    code=$(curl -sS -o /dev/null -m 10 -w '%{http_code}' "$PM_NOTIFY_URL" 2>/dev/null || echo 000)
-    if [ "$code" -lt 500 ]; then ok "completion endpoint answers ($code)"; else bad "completion endpoint unreachable ($code)"; fi
+  if [ -n "${PM_NOTIFY_URL:-}" ] && [ -n "${PM_NOTIFY_TOPIC:-}" ]; then
+    if [ -f "${PM_NOTIFY_NETRC:-/nonexistent}" ]; then
+      code=$(curl -sS -o /dev/null -m 10 -w '%{http_code}' --netrc-file "$PM_NOTIFY_NETRC" \
+        -d "smoke $(date +%s)" "$PM_NOTIFY_URL/$PM_NOTIFY_TOPIC" 2>/dev/null || echo 000)
+      case "$code" in
+        2*) ok "completion channel accepts a publish ($code)" ;;
+        *) bad "completion channel publish failed ($code)" ;;
+      esac
+    else
+      bad "PM_NOTIFY_NETRC missing; cannot verify the completion channel"
+    fi
   fi
 fi
 

@@ -32,6 +32,8 @@ disable_after_run() { muse hook-disable "$HOOK_ID"; }
 
 The host must also export the hook id, its state directory, and a dry-run flag. A dry run must be silent, must not wake, and must not write receipts.
 
+No hook script ships with this repository: the polling loop is host-specific. The shim above is the example; the flow it drives is described in `ntfy.md` and `COMPOSITION.md`.
+
 ## Verification
 
 1. Create a hook with an obviously invalid trigger; the dry run must be silent and name the reason (`no new task events` or equivalent).
