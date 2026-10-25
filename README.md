@@ -98,9 +98,11 @@ Muse is the reference host, not a dependency. Any runtime exposing the same five
 - `templates/` — the brief and the report formats
 - `adapters/` — one file per tool, starting with the host contract
 - `builds/` — one concrete tool combination per host
-- `bin/` — reference scripts: dispatch, worker wrapper, sweep, smoke test
+- `bin/` — reference scripts: dispatch, worker wrapper, status, sweep, smoke test
+- `tests/` — unit tests for the status query
 - `config/pm.env.example` — every variable the scripts read
 - `docs/plans/` — how this package is assembled
+- `docs/upstream.md` — the private baseline this package was ported from
 
 ## License
 

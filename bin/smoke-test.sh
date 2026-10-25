@@ -24,12 +24,15 @@ for file in "$SCRIPT_DIR"/*.sh "$SCRIPT_DIR"/*.sh.template; do
   [ -f "$file" ] || continue
   if bash -n "$file" 2>/dev/null; then ok "bash $file"; else bad "bash $file"; fi
 done
-if python3 -c 'import ast, sys; ast.parse(open(sys.argv[1], encoding="utf-8").read())' \
-  "$SCRIPT_DIR/render.py" 2>/dev/null; then
-  ok "python render.py"
-else
-  bad "python render.py"
-fi
+for file in "$SCRIPT_DIR"/*.py; do
+  [ -f "$file" ] || continue
+  if python3 -c 'import ast, sys; ast.parse(open(sys.argv[1], encoding="utf-8").read())' \
+    "$file" 2>/dev/null; then
+    ok "python $(basename "$file")"
+  else
+    bad "python $(basename "$file")"
+  fi
+done
 
 echo "== configuration =="
 if pm_load_config "$REPO_ROOT"; then

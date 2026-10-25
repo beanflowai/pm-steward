@@ -74,6 +74,8 @@ Set up the push channel (`adapters/ntfy.md`), then create the per-task hook **be
 
 Check: rerun the no-op task. A `done` ping arrives, the hook wakes the conversation that started the task, and the PM writes a receipt.
 
+`./bin/status.sh --task hello-001` should report `done_received` (or `done_sent` before the wake), and `./bin/status.sh --check` should exit 0.
+
 If the ping is lost, the sweep still finds the `done` record. Run `./bin/sweep.sh` and confirm it reports the task.
 
 ## 5. Run the loop once
