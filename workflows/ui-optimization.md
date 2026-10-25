@@ -26,7 +26,7 @@
 
 ## Gates
 
-- The baseline was frozen and recorded before implementation.
+- The baseline was frozen before implementation, and the frozen record is kept as a timeline entry.
 - Before and after screenshots exist at 390 / 768 / 1440.
 - Second review completed where R16 requires it.
 - Visual walkthrough signed off by the PM and a second agent.

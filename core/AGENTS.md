@@ -95,7 +95,7 @@ The ledger is the host's assistant tracking items: one entry per PM task, opened
 
 Each entry has three parts:
 
-- `description`: a checklist in three marks — `✓` done, `→` in progress, `□` pending — written over the gate order. Prose entries are migrated to this form; the fixed rendering is what makes status machine-readable and removes the "is this done?" ambiguity.
+- `description`: a checklist in three marks — `✓` done, `→` in progress, `□` pending — written over the gate order. It lists the gate names and their marks only; evidence belongs in the timeline. The fixed rendering is what makes status machine-readable and removes the "is this done?" ambiguity. When this format is adopted, existing active entries are not rewritten: they run to close under their original checklist, and new tasks use this form.
 - `current_state`: one line, always the current step and the next step, refreshed as work moves rather than reconstructed from memory.
 - timeline: one entry per gate pass, with concrete evidence — review window or link, findings count and closure status, test results.
 

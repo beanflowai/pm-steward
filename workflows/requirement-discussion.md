@@ -14,7 +14,7 @@
    - Qualitative judgment, option comparison, and plan drafting go to the architect role, or to the PM when the scope is small.
 4. **Propose** — alternatives with the reason each was rejected, the recommendation, the affected scope, risks, things explicitly not done, and how it will be verified. Never hand over a plan built on unresolved preconditions.
 5. **Wait for confirmation** — an explicit yes is required. If the human pushes back, revise. Do not slide into implementation or into dividing up the work.
-6. **Record and hand off** — put the confirmed plan in the ledger entry or the design document, then enter the matching implementation workflow. A "don't do it" conclusion gets a short note for later.
+6. **Record and hand off** — record the confirmed plan as a design document. When it enters implementation, open a ledger entry for that implementation task. A "don't do it" conclusion gets a short note for later.
 
 ## Gates
 
