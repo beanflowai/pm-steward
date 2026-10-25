@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+# Worker wrapper template. Rendered by dispatch.sh on the PM host, shipped to
+# the worker, and run detached. It owns: the started/done records, the
+# completion pings, and the stall monitor.
+#
+# Contract: no wall-clock kill. The monitor reminds, never judges.
+
+set -uo pipefail
+
+TASK_ID='{{TASK_ID}}'
+BRIEF_FILE='{{BRIEF_FILE}}'
+WORKDIR='{{WORKDIR}}'
+LOG_FILE='{{LOG_FILE}}'
+SPOOL_DIR='{{SPOOL_DIR}}'
+PATH_PREFIX='{{PATH_PREFIX}}'
+NOTIFY_URL='{{NOTIFY_URL}}'
+NOTIFY_TOPIC='{{NOTIFY_TOPIC}}'
+NOTIFY_NETRC='{{NOTIFY_NETRC}}'
+INTERVAL={{MONITOR_INTERVAL_SECS}}
+TICK={{MONITOR_TICK_SECS}}
+RUNNER_CMD=( {{RUNNER_CMD}} )
+
+if [ -n "$PATH_PREFIX" ]; then
+  export PATH="$PATH_PREFIX:$PATH"
+fi
+
+mkdir -p "$SPOOL_DIR" "$(dirname "$LOG_FILE")" || exit 1
+
+log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >>"$LOG_FILE"; }
+
+# Notify output goes to a sidecar file, never to LOG_FILE: the monitor treats
+# log growth as evidence of progress, and its own bookkeeping must not count.
+NOTIFY_LOG="$SPOOL_DIR/.$TASK_ID.notify.log"
+
+notify() {
+  local msg="$1"
+  [ -n "$NOTIFY_URL" ] && [ -n "$NOTIFY_TOPIC" ] || {
+    printf 'skipped %s (no url or topic)\n' "$msg" >>"$NOTIFY_LOG"
+    return 0
+  }
+  if [ -n "$NOTIFY_NETRC" ] && [ -f "$NOTIFY_NETRC" ]; then
+    curl -fsS --max-time 10 --netrc-file "$NOTIFY_NETRC" \
+      -d "$msg" "$NOTIFY_URL/$NOTIFY_TOPIC" >>"$NOTIFY_LOG" 2>&1 \
+      || printf 'failed %s\n' "$msg" >>"$NOTIFY_LOG"
+  else
+    printf 'skipped %s (missing netrc)\n' "$msg" >>"$NOTIFY_LOG"
+  fi
+}
+
+write_record() {
+  local event="$1" status="$2" code="${3:-}"
+  python3 - "$TASK_ID" "$event" "$status" "$LOG_FILE" "$code" "$SPOOL_DIR" <<'PY'
+import json, os, socket, sys, tempfile, time
+
+task, event, status, log_path, code, spool = sys.argv[1:7]
+record = {
+    "task_id": task,
+    "event": event,
+    "status": status,
+    "host": socket.gethostname(),
+    "log": log_path,
+    "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+}
+if code != "":
+    record["exit_code"] = int(code)
+
+path = os.path.join(spool, f"{task}.{event}.json")
+fd, tmp = tempfile.mkstemp(dir=spool, prefix=f".{task}.")
+try:
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        json.dump(record, handle, ensure_ascii=False)
+    os.replace(tmp, path)
+except OSError:
+    if os.path.exists(tmp):
+        os.unlink(tmp)
+    raise
+PY
+}
+
+fingerprint() {
+  local marker="$1"
+  {
+    git -C "$WORKDIR" status --porcelain 2>/dev/null
+    git -C "$WORKDIR" diff --stat 2>/dev/null
+    find "$WORKDIR" -type f -newer "$marker" -not -path '*/.git/*' 2>/dev/null | wc -l
+  } | cksum | awk '{print $1 "-" $2}'
+}
+
+if ! cd "$WORKDIR"; then
+  log "cannot enter workdir: $WORKDIR"
+  write_record done failed 1
+  notify "done $TASK_ID failed"
+  exit 1
+fi
+
+log "wrapper start task=$TASK_ID workdir=$WORKDIR"
+write_record started running ""
+notify "started $TASK_ID"
+
+MARKER="$SPOOL_DIR/.$TASK_ID.marker"
+: >"$MARKER"
+
+"${RUNNER_CMD[@]}" <"$BRIEF_FILE" >>"$LOG_FILE" 2>&1 &
+RUN_PID=$!
+
+monitor() {
+  local last_size=-1 last_fp="" stalled=0 slept size fp
+  while kill -0 "$RUN_PID" 2>/dev/null; do
+    slept=0
+    while [ "$slept" -lt "$INTERVAL" ] && kill -0 "$RUN_PID" 2>/dev/null; do
+      sleep "$TICK"
+      slept=$((slept + TICK))
+    done
+    kill -0 "$RUN_PID" 2>/dev/null || break
+    size=$(wc -c <"$LOG_FILE" 2>/dev/null || printf '0')
+    fp=$(fingerprint "$MARKER")
+    if [ "$size" = "$last_size" ] && [ "$fp" = "$last_fp" ]; then
+      if [ "$stalled" -eq 0 ]; then
+        notify "check $TASK_ID"
+        stalled=1
+      fi
+    elif [ "$stalled" -eq 1 ]; then
+      notify "progress $TASK_ID"
+      stalled=0
+    fi
+    last_size=$size
+    last_fp=$fp
+  done
+}
+
+monitor &
+MONITOR_PID=$!
+
+wait "$RUN_PID"
+CODE=$?
+kill "$MONITOR_PID" 2>/dev/null
+wait "$MONITOR_PID" 2>/dev/null
+
+if [ "$CODE" -eq 0 ]; then
+  STATUS=done
+else
+  STATUS=failed
+fi
+
+log "wrapper end task=$TASK_ID exit=$CODE status=$STATUS"
+write_record done "$STATUS" "$CODE"
+notify "done $TASK_ID $STATUS"
+
+exit 0

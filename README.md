@@ -64,11 +64,11 @@ In order of importance:
 
 Two stores, not one: the **ledger** holds what to do and how far each gate has progressed; the **event pool** holds `started` and `done` records; the **registry** holds where each task ran and its log path. The worker needs outbound access to the completion channel, not just inbound SSH.
 
-Everything else — model routing tables, browser-based static review, tunnels — is optional. The smallest working setup will be documented in `MINIMUM.md` (planned).
+Everything else — model routing tables, browser-based static review, tunnels — is optional. The smallest working setup is documented in `MINIMUM.md`.
 
 ## How the tools compose
 
-This is not a script collection. It is a set of stages, each needing specific tools wired together. The full matrix lives in `COMPOSITION.md` (planned); the short version:
+This is not a script collection. It is a set of stages, each needing specific tools wired together. The full matrix lives in `COMPOSITION.md`; the short version:
 
 | Stage | Tools | Their job |
 |---|---|---|
@@ -81,11 +81,9 @@ This is not a script collection. It is a set of stages, each needing specific to
 
 ## Status
 
-Early. The rules, workflows, and templates are in place; the adapters and the minimum working path are not. There is no runnable code in this repo yet.
+Early, but runnable. The rules, workflows, templates, adapters, and reference scripts are in place. The loop has not been exercised against a real worker from a clean machine yet, so treat the scripts as a starting point, not a product.
 
-Read next: `GLOSSARY.md`, `pm-role.md`, `core/AGENTS.md`, `workflows/`, `templates/`.
-
-Next: `STACK.md` and `COMPOSITION.md` — the capability map and the stage-by-tool map — then one adapter per tool, starting with the host contract (`adapters/muse.md`).
+Read next: `GLOSSARY.md`, `pm-role.md`, `core/AGENTS.md`, `COMPOSITION.md`, `MINIMUM.md`.
 
 Muse is the reference host, not a dependency. Any runtime exposing the same five interfaces — persistent conversation, wake, hook-log, cron, remote shell — can replace it.
 
@@ -95,7 +93,9 @@ Muse is the reference host, not a dependency. Any runtime exposing the same five
 - `pm-role.md`, `GLOSSARY.md` — the role and the vocabulary
 - `workflows/` — one file per task shape, plus a template for new ones
 - `templates/` — the brief and the report formats
-- `adapters/` — one file per tool (planned)
+- `adapters/` — one file per tool, starting with the host contract
+- `bin/` — reference scripts: dispatch, worker wrapper, sweep, smoke test
+- `config/pm.env.example` — every variable the scripts read
 - `docs/plans/` — how this package is assembled
 
 ## License

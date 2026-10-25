@@ -188,7 +188,7 @@ Commands in a brief perform one action each. Do not chain with `&&`, do not use 
 
 Before launching, verify the dispatch configuration and the completion channel for this task: the configured template exists and is the intended one, and the per-task hook is built and verified. A task estimated to run longer than the adapter's long-task threshold must use the long-task template; if it does not, stop and fix the configuration instead of dispatching. Any missing piece stops the dispatch. There is no silent fallback to an older template or an unchecked path.
 
-The hook must be created, dry-run silently, enabled, and listed before dispatch. The dispatch step itself does not create or validate the hook.
+The hook must be created, dry-run silently, enabled, and listed before dispatch. If the host adapter provides a hook-creation command, the dispatch script runs it before the launch and aborts if it fails; otherwise the operator must create and verify it first. Dispatch never launches with an unverified completion channel.
 
 ### R28 Model selection
 

@@ -30,6 +30,21 @@ Build in this order; each step is verifiable before the next depends on it:
 
 Steps 1–4 are `MINIMUM.md`. Steps 5–6 are the quality gates in `workflows/feature-dev.md`.
 
+## Reference scripts
+
+`bin/` is a working starting point, not a product. Each script maps to one stage:
+
+| Script | Stage | What it owns |
+|---|---|---|
+| `bin/pm-config.sh` | all | configuration precedence and input validation |
+| `bin/render.py` | dispatch | fills the wrapper template and fails closed on a missing value |
+| `bin/dispatch.sh` | dispatch | registry, render, ship, detached launch, optional hook creation |
+| `bin/worker-wrapper.sh.template` | execute, monitor, wake | started and done records, completion pings, stall reminder |
+| `bin/sweep.sh` | resume | read-only reconciliation of registry, pool, and receipts |
+| `bin/smoke-test.sh` | verification | syntax, config, rendering, leaks, language, links; `--live` touches the worker |
+
+What the scripts deliberately do not do: they do not merge, they do not write to `main`, and they do not kill a running task.
+
 ## Why the order matters
 
 Every stage hands the next stage a file, a record, or a receipt. If a stage's artifact is missing, the next stage fails in a way that looks like a different problem: a missing registry entry looks like a lost log; a missing receipt looks like a dropped wake; a missing ledger entry looks like the bot forgot. Check the artifact before diagnosing the stage.

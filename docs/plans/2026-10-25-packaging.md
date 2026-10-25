@@ -4,6 +4,7 @@
 - Status: draft, pending review
 - Target repo: https://github.com/beanflowai/pm-steward (public)
 - Source instance: private `pm-role-workflow` (stays private; its history is not published)
+- Progress (2026-10-25): M1 shipped to `main`; M2 and M3 shipped on `docs/m2-core-docs`; M4 reference scripts are in place but have not been exercised against a real worker yet; M5 waits for a real run transcript.
 
 ## 1. Goals and non-goals
 
