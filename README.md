@@ -57,13 +57,13 @@ In order of importance:
 | Capability | What it must guarantee | Reference | Substitute |
 |---|---|---|---|
 | Bot host | persistent conversation, background wake, scheduled jobs | Muse | any bot runtime with hooks and cron |
-| Ledger storage | one durable record per task, written before work starts | Goals | Linear, Notion, SQLite |
-| Ledger injection | the record is in context before the first reply of a session | Muse injects Goals automatically | a session-start rule in the bot's instructions: read the ledger first |
+| Ledger storage | one assistant tracking item per PM task — not the user's personal goals — with a gate checklist and evidence | Goals | Linear, Notion, SQLite |
+| Ledger injection | the entry is in context before the first reply of a session | Muse injects tracking items automatically | a session-start rule in the bot's instructions: read the ledger first |
 | Remote dispatch | detached launch, log file, recorded host and log path | SSH + `nohup` | Tailscale + SSH, container exec, cloud job API |
 | Completion signal | a worker completion can wake the conversation | ntfy + per-task hook | webhook, queue, chat message |
 | Independent review | a second model family reviews the diff | a reviewer run through a different provider | a human reviewer |
 
-Injection is a property of the host, not of the tracker: Goals is injected because Muse puts it in context, not because Goals is special. With Linear or SQLite the bot must be told to read the ledger at the start of every session, and the sweep should flag a session that acted without doing so.
+Injection is a property of the host, not of the tracker: tracking items are injected because Muse puts them in context, not because Goals is special. With Linear or SQLite the bot must be told to read the ledger at the start of every session, and the sweep should flag a session that acted without doing so. The ledger never holds worker-run facts: `started`, `done`, exit codes, and log growth live in the event pool.
 
 Three stores, not one: the **ledger** holds what to do and how far each gate has progressed; the **event pool** holds `started` and `done` records; the **registry** holds where each task ran and its log path. The worker needs outbound access to the completion channel, not just inbound SSH.
 

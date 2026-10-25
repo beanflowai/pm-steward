@@ -17,7 +17,7 @@ One concrete instantiation of this matrix, with a bill of materials and a config
 | Accept | Branch and evidence | PM, git, test runner | The PM reruns the checks and reads the diff (R18) | "Tests pass" is taken from the worker's word | The PM's own command output is in the ledger |
 | Push | Accepted branch | git, host | Task branch only, fast-forward only (R18) | A push to `main` or a forced update | `git ls-remote` shows the task branch, not `main` |
 | Report | Reconciled ledger | ledger, chat | Every checklist item is closed with evidence (R16) | "Done" reported with open items | The checklist has no pending or in-progress marks |
-| Resume | A new session | ledger, event pool, registry, sweep | The books are reconciled before the first sentence (R17) | The bot continues a stale mental state and reports yesterday's status | Unclaimed `done` records are continued; receipts match acts |
+| Resume | A new session | ledger, event pool, registry, sweep | Both layers are reconciled before the first sentence (R17) | The bot continues a stale mental state and reports yesterday's status | Unclaimed `done` records are continued; receipts match acts; the ledger's current step agrees with the pool |
 
 ## Wiring order
 

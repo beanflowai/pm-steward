@@ -14,7 +14,7 @@ Every document in this repo uses these words with exactly these meanings.
 
 **Second reviewer** — the separate static review after the local commit: a browser session, an API, or a human. It is a gate, not a substitute for the agent reviewer.
 
-**Ledger** — the durable record of what to do and how far each task has progressed through the gates. It is re-read at the start of every session. Chat history is never the ledger.
+**Ledger** — the host's assistant tracking items: one per PM task, server-side, injected into context at the start of every session. It holds the gate checklist, the current pulse, and the evidence timeline. It is not the user's personal goals, and it is not the event pool: the ledger says how far the task has moved, the pool says whether the worker run finished. A workspace note such as `GOAL.md` may mirror an entry when it is created; it is not live and never the ledger.
 
 **Gate** — one mandatory checkpoint in the loop: implement, agent review, local commit, second review, fix rounds, acceptance, push, report. Each pass is recorded in the ledger with evidence.
 

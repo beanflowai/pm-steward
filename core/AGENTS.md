@@ -91,7 +91,15 @@ Dispatch findings at finding granularity, one task per finding, unless two findi
 
 ### R16 Ledger and gate accounting
 
-Every task gets one ledger entry when it starts and is closed only when finished. The entry's description is a checklist using three marks: done, in progress, pending; its current state always names the current step and the next step. Every gate pass appends a timeline entry with concrete evidence: review window or link, findings count and closure status, test results.
+The ledger is the host's assistant tracking items: one entry per PM task, opened before work starts and closed only when the task is finished. Entries are server-side and injected into context at the start of every session. The ledger is the single source for how far a *task* has progressed. It is not the user's personal goals, and it is not the event pool: the pool records whether a *worker run* finished, the ledger records how far the task has moved through the gates. Check both when resuming; neither answers the other's question.
+
+Each entry has three parts:
+
+- `description`: a checklist in three marks — `✓` done, `→` in progress, `□` pending — written over the gate order. Prose entries are migrated to this form; the fixed rendering is what makes status machine-readable and removes the "is this done?" ambiguity.
+- `current_state`: one line, always the current step and the next step, refreshed as work moves rather than reconstructed from memory.
+- timeline: one entry per gate pass, with concrete evidence — review window or link, findings count and closure status, test results.
+
+Only the PM writes this entry. A worker completion, a wake, and a sweep never update it; that is why a done wake does not mean the task advanced.
 
 The gate order is fixed: implement, agent review, local commit, second review, fix rounds (each fix round is reviewed by a fresh agent before its local commit), acceptance, final push, report.
 

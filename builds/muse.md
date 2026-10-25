@@ -13,12 +13,23 @@ Muse holds the conversation, the wake, the schedule, and the ledger. Everything 
 - the routing table is a file a human can edit without a commit
 - the second reviewer is a separate browser session, not another runner on the same machine
 
+## Two layers of state
+
+Both layers use the word "task"; they hold different objects and must not be substituted for each other.
+
+| Question | Store | Fields | Written by |
+|---|---|---|---|
+| How far has the PM task moved? | Goals assistant tracking items | gate checklist (`✓` / `→` / `□`), `current_state`, evidence timeline | the PM only |
+| Did the worker run finish, and how? | event pool + worker log + hook receipts | task_id, started/done, exit_code, log growth | wrapper, hook, PM (receipt) |
+
+A `done` wake does not move the ledger. The pool does not know about acceptance, push, or the next gate. Reading one and calling it status is the most common way to report a state that is wrong.
+
 ## Bill of materials
 
 | Layer | Tool | What it does here | Config | Adapter |
 |---|---|---|---|---|
 | Host | Muse | Conversation, wake, hook log/silent, cron, side chat, connectors | `PM_HOOK_RUNTIME`, `PM_HOOK_CREATE_CMD` | `adapters/muse.md` |
-| Ledger | Goals | One entry per task; injected into context at session start | host feature | `adapters/ledger.md` |
+| Ledger | Goals (assistant tracking items) | One entry per PM task: gate checklist, current pulse, evidence timeline; injected at session start | host feature | `adapters/ledger.md` |
 | Dispatch | SSH + `nohup` + wrapper | Detached launch, log, PID, registry entry | `PM_WORKER_*`, `PM_SSH_OPTS` | `adapters/ssh.md` |
 | Reachability | Cloudflare Tunnel + Access | Reach a worker with no public address; optionally expose ntfy | `PM_SSH_OPTS`, `PM_CLOUDFLARED_BIN` | `adapters/cloudflare-tunnel.md` |
 | Runner | Claude Code via ccs profiles | Executes the brief, edits, tests, stops at the turn limit | `PM_RUNNER_CMD`, `PM_WORKER_PATH` | `adapters/ccs.md` |
@@ -67,7 +78,7 @@ flowchart LR
 | Hook runtime shim (`wake`, `log`, `silent`, per-hook state, disable) | The hook is the only path from a completion to the conversation | No wake, or a shared cursor that makes two tasks steal events |
 | Delivery pinned to the originating chat at hook creation | The result must reach the window that asked | The wake lands in a side panel and nobody acts on it |
 | Cron for the sweep | Recovers a lost ping or a hook that never got created | A finished task sits unclaimed until someone looks |
-| Goals injected at session start | The book survives compaction and a runtime change | The bot answers from chat memory and reports a stale state |
+| Goals assistant tracking items injected at session start | The book survives compaction and a runtime change; separate from the user's personal goals | The bot answers from chat memory and reports a stale state |
 | Connectors or a shell that can reach the worker | Dispatch and the tunnel both depend on it | `ssh` works in a terminal but fails inside the hook |
 | Side chat (optional) | Long work does not block the main thread | The PM is unavailable while a task runs |
 

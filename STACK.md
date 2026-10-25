@@ -5,7 +5,7 @@ Ten capabilities make the loop work. Host, ledger, dispatch, a runner with a mod
 | # | Capability | What it must provide | Reference | Substitutes | Adapter |
 |---|---|---|---|---|---|
 | 1 | Bot host | Persistent conversation, wake, hook log/silent, cron, remote shell | Muse | any bot runtime with hooks and scheduled jobs | `adapters/muse.md` |
-| 2 | Ledger | One durable record per task, with a per-gate timeline; the bot reads it before acting | the host's task board (Goals) | Linear, Notion, SQLite, a JSON file | `adapters/ledger.md` |
+| 2 | Ledger | One assistant tracking item per PM task: gate checklist, current pulse, evidence timeline; injected at session start | the host's task board (Goals) | Linear, Notion, SQLite, a JSON file | `adapters/ledger.md` |
 | 3 | Dispatch | Detached remote launch, log file, PID, registry entry | SSH + `nohup` | Tailscale + SSH, container exec, a cloud job API | `adapters/ssh.md` |
 | 4 | Reachability | Reach the worker when it has no public address | Cloudflare Tunnel + Access | Tailscale, WireGuard, a jump host | `adapters/cloudflare-tunnel.md` |
 | 5 | Runner | A CLI agent that can edit files, run tests, and stop | Claude Code through ccs profiles | codex CLI, aider, plain `claude` | `adapters/ccs.md` |

@@ -24,7 +24,17 @@ Minimum fields per entry:
 
 ## Reference implementation
 
-The reference host's task board (Goals). It persists server-side and is re-injected into context at every session start, which is the property that makes it a ledger rather than a note.
+The reference host's task board (Goals) holds assistant tracking items. They are server-side, injected into context at every session start, and survive a runtime change — the property that makes them a ledger rather than a note. They are distinct from the user's personal goals.
+
+An entry has three parts:
+
+- a gate checklist in three marks: `✓` done, `→` in progress, `□` pending
+- `current_state`: one line naming the current step and the next step
+- a timeline: one evidence line per gate pass
+
+Only the PM writes the entry. A worker completion, a wake, and a sweep never do.
+
+A workspace file such as `GOAL.md` is a creation-time mirror, not live state. Reading it as the ledger is the same mistake as reading chat scrollback.
 
 ## Substitutes
 
