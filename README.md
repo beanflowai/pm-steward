@@ -1,6 +1,6 @@
 # pm-steward
 
-**A project manager that lives in a chat window.** It plans with you, dispatches coding agents, keeps the ledger, and reviews the work before anything ships.
+**A project manager that lives in a chatbot like Muse.** It automates project management for you: planning, dispatching coding agents, keeping the ledger, and reviewing the work before anything ships.
 
 No dashboard, no ticket board, and no CLI for daily work. The interface is a conversation with a bot that stays on duty between messages.
 
