@@ -1,6 +1,6 @@
 # pm-steward
 
-**A project manager that lives in a chat window.** It plans with you, dispatches coding agents, keeps the ledger, and reviews the work before anything ships.
+**A project manager that lives in a chatbot such as Muse.** It automates project management for you: planning, dispatching coding agents, keeping the ledger, and reviewing the work before anything ships.
 
 No dashboard, no ticket board, and no CLI for daily work. The interface is a conversation with a bot that stays on duty between messages.
 
@@ -52,23 +52,26 @@ Hard boundaries:
 
 ## What you need
 
-Most necessary first:
+In order of importance:
 
-| Capability | Reference implementation | Acceptable substitute |
-|---|---|---|
-| Bot host: persistent conversation, background wake, scheduled jobs | Muse | any bot runtime with hooks and cron |
-| Durable ledger, re-injected into context at every session start | Goals | Linear, Notion, SQLite, plus a rule that the bot reads them first |
-| Remote dispatch to a worker machine | SSH + `nohup` + log files | Tailscale + SSH, container exec, cloud job API |
-| Completion signal that wakes the conversation | ntfy + per-task hook | webhook, queue, chat message |
-| Independent review by another model family | a reviewer run through a different provider | a human reviewer |
+| Capability | What it must guarantee | Reference | Substitute |
+|---|---|---|---|
+| Bot host | persistent conversation, background wake, scheduled jobs | Muse | any bot runtime with hooks and cron |
+| Ledger storage | one assistant tracking item per PM task — not the user's personal goals — with a gate checklist and evidence | Goals | Linear, Notion, SQLite |
+| Ledger injection | the entry is in context before the first reply of a session | Muse injects tracking items automatically | a session-start rule in the bot's instructions: read the ledger first |
+| Remote dispatch | detached launch, log file, recorded host and log path | SSH + `nohup` | Tailscale + SSH, container exec, cloud job API |
+| Completion signal | a worker completion can wake the conversation | ntfy + per-task hook | webhook, queue, chat message |
+| Independent review | a second model family reviews the diff | a reviewer run through a different provider | a human reviewer |
 
-Two stores, not one: the **ledger** holds what to do and how far each gate has progressed; the **event pool** holds `started` / `done` records plus the dispatch registry (host, log path). The worker needs outbound access to the completion channel, not just inbound SSH.
+Injection is a property of the host, not of the tracker: tracking items are injected because Muse puts them in context, not because Goals is special. With Linear or SQLite the bot must be told to read the ledger at the start of every session, and the sweep should flag a session that acted without doing so. The ledger never holds worker-run facts: `started`, `done`, exit codes, and log growth live in the event pool.
 
-Everything else — model routing tables, browser-based static review, tunnels — is optional. The smallest working setup will be documented in `MINIMUM.md` (planned).
+Three stores, not one: the **ledger** holds what to do and how far each gate has progressed; the **event pool** holds `started` and `done` records; the **registry** holds where each task ran and its log path. The worker needs outbound access to the completion channel, not just inbound SSH.
+
+Everything else — model routing tables, browser-based static review, tunnels — is optional. The smallest working setup is documented in `MINIMUM.md`.
 
 ## How the tools compose
 
-This is not a script collection. It is a set of stages, each needing specific tools wired together. The full matrix lives in `COMPOSITION.md` (planned); the short version:
+This is not a script collection. It is a set of stages, each needing specific tools wired together. The full matrix lives in `COMPOSITION.md`; the short version:
 
 | Stage | Tools | Their job |
 |---|---|---|
@@ -81,11 +84,25 @@ This is not a script collection. It is a set of stages, each needing specific to
 
 ## Status
 
-Documentation only. There is no runnable code in this repo yet.
+Early, but runnable. The rules, workflows, templates, adapters, and reference scripts are in place. The loop has not been exercised against a real worker from a clean machine yet, so treat the scripts as a starting point, not a product.
 
-The workflow was extracted from a running private instance and is being generalized as it is ported. Rules and adapters come first; scripts and a minimum working path follow. Next: `STACK.md`, `COMPOSITION.md`, and the first adapter, which is the host contract (`adapters/muse.md`).
+Read next: `GLOSSARY.md`, `pm-role.md`, `core/AGENTS.md`, `COMPOSITION.md`, `MINIMUM.md`. For one concrete combination, see the Muse build in `builds/muse.md`.
 
 Muse is the reference host, not a dependency. Any runtime exposing the same five interfaces — persistent conversation, wake, hook-log, cron, remote shell — can replace it.
+
+## Layout
+
+- `core/AGENTS.md` — the standing rules, R01 to R34
+- `pm-role.md`, `GLOSSARY.md` — the role and the vocabulary
+- `workflows/` — one file per task shape, plus a template for new ones
+- `templates/` — the brief and the report formats
+- `adapters/` — one file per tool, starting with the host contract
+- `builds/` — one concrete tool combination per host
+- `bin/` — reference scripts: dispatch, worker wrapper, status, sweep, smoke test
+- `tests/` — unit tests for the status query
+- `config/pm.env.example` — every variable the scripts read
+- `docs/plans/` — how this package is assembled
+- `docs/upstream.md` — the private baseline this package was ported from
 
 ## License
 

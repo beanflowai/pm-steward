@@ -1,0 +1,6 @@
+config/pm.env
+config/pm.env.*
+!config/pm.env.example
+*.local
+.DS_Store
+__pycache__/
